@@ -1,0 +1,799 @@
+/* ================================================================
+   PREMIUM WEDDING INVITATION — STYLESHEET
+   Organized top to bottom in the order things appear on screen:
+   Reset -> Tokens -> Base -> Envelope -> Video -> Transition ->
+   Music Toggle -> Wedding Card -> Story -> Countdown -> Location ->
+   Footer -> Scroll Reveal -> Responsive Enhancements
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   RESET
+---------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ----------------------------------------------------------------
+   DESIGN TOKENS
+   Everything visual is driven from here. Edit these to re-theme
+   the entire site without touching a single selector below.
+---------------------------------------------------------------- */
+:root {
+  /* Colors */
+  --color-primary: #6A3D43;          /* required primary text color */
+  --color-primary-light: #8B5A61;
+  --color-primary-dark: #4A2A2F;
+  --color-accent-gold: #C9A66B;      /* wax-seal / signature accent */
+  --color-accent-gold-soft: #E3CBA0;
+  --color-blush: #EFDDD9;
+  --color-paper: #FBF6EE;
+  --color-paper-dark: #F1E8DA;
+  --color-ivory-overlay: #FFF9EF;
+  --color-text-muted: #A98790;
+  --color-white: #FFFFFF;
+  --color-black-soft: #1F1416;
+
+  /* Typography */
+  --font-heading: "Playwrite BR", cursive;
+  /* Put your secondary font family here */
+  --font-body: "Cormorant Garamond", serif;
+
+  /* Spacing scale */
+  --space-3xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 18px;
+  --radius-lg: 30px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-soft: 0 8px 30px rgba(106, 61, 67, 0.12);
+  --shadow-medium: 0 18px 45px rgba(106, 61, 67, 0.18);
+  --shadow-glow: 0 0 70px rgba(201, 166, 107, 0.5);
+
+  /* Animation speeds & easing */
+  --speed-fast: 0.3s;
+  --speed-medium: 0.6s;
+  --speed-slow: 1s;
+  --ease-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout */
+  --content-max-width: 620px;
+}
+
+/* ----------------------------------------------------------------
+   BASE / PAPER TEXTURE
+   A subtle grain + soft radial warmth stands in for a paper photo
+   texture, so the whole site never depends on an external image.
+---------------------------------------------------------------- */
+body {
+  font-family: var(--font-body);
+  color: var(--color-primary);
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.6), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  line-height: 1.6;
+  font-size: 18px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ================================================================
+   ENVELOPE OPENING SCENE
+================================================================ */
+.envelope-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--color-primary-dark), var(--color-primary));
+  overflow: hidden;
+  transition: opacity var(--speed-slow) var(--ease-smooth);
+}
+
+.envelope-scene.is-fading-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.envelope-scene[hidden] {
+  display: none;
+}
+
+/* Warm glow that blooms from behind the opened envelope */
+.envelope-scene__glow {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 214, 150, 0.55), rgba(255, 214, 150, 0) 65%);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity var(--speed-slow) var(--ease-out-soft), transform 1.4s var(--ease-out-soft);
+  pointer-events: none;
+}
+
+.envelope-scene__glow.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.envelope {
+  position: relative;
+  width: min(78vw, 320px);
+  aspect-ratio: 3 / 2;
+  transform: translateY(60px);
+  opacity: 0;
+  transition: transform var(--speed-slow) var(--ease-out-soft), opacity var(--speed-slow) var(--ease-out-soft);
+}
+
+/* Step 1: envelope rises into view */
+.envelope.is-entered {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Step 2: once centered, a very subtle idle float */
+.envelope.is-floating {
+  animation: envelope-float 4.5s ease-in-out infinite;
+}
+
+@keyframes envelope-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Envelope body: a paper-colored card with two triangular "pockets"
+   drawn using clip-path, so it reads as an envelope with no images. */
+.envelope__body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: linear-gradient(180deg, var(--color-paper), var(--color-paper-dark));
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-medium), inset 0 0 0 1px rgba(106, 61, 67, 0.08);
+  overflow: hidden;
+}
+
+.envelope__pocket {
+  position: absolute;
+  bottom: 0;
+  width: 52%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(106, 61, 67, 0.06), rgba(106, 61, 67, 0.14));
+}
+
+.envelope__pocket--left {
+  left: 0;
+  clip-path: polygon(0 100%, 0 0, 100% 100%);
+}
+
+.envelope__pocket--right {
+  right: 0;
+  clip-path: polygon(100% 100%, 100% 0, 0 100%);
+}
+
+/* Envelope flap: a CSS triangle covering the top half, folding down
+   over the pockets. This is the only piece that rotates. */
+.envelope__flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 55%;
+  z-index: 3;
+  background: linear-gradient(160deg, var(--color-primary-light), var(--color-primary));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transform: rotateX(0deg);
+  backface-visibility: hidden;
+  box-shadow: 0 2px 10px rgba(74, 42, 47, 0.25);
+  transition: transform var(--speed-slow) var(--ease-smooth);
+}
+
+/* Only the flap rotates, opening like a real envelope */
+.envelope__flap.is-open {
+  transform: rotateX(180deg);
+}
+
+/* Wax seal: a radial-gradient "blob" with an embossed monogram,
+   standing in for a photographed wax seal. */
+.envelope__seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22%;
+  aspect-ratio: 1 / 1;
+  z-index: 4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35), transparent 45%),
+    radial-gradient(circle, var(--color-accent-gold), var(--color-primary-dark) 85%);
+  box-shadow: 0 3px 10px rgba(74, 42, 47, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.3),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.3);
+  animation: seal-pulse 3.5s ease-in-out infinite;
+  transition: transform var(--speed-fast) var(--ease-smooth), opacity var(--speed-fast) var(--ease-smooth);
+}
+
+.envelope__seal-monogram {
+  font-family: var(--font-heading);
+  color: var(--color-white);
+  font-size: clamp(0.7rem, 2.4vw, 0.95rem);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.02em;
+}
+
+.envelope__seal:focus-visible {
+  outline: 2px solid var(--color-accent-gold-soft);
+  outline-offset: 4px;
+}
+
+@keyframes seal-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.06); }
+}
+
+/* Tap feedback: seal shrinks and fades before the flap opens */
+.envelope__seal.is-tapped {
+  animation: none;
+  transform: translate(-50%, -50%) scale(0.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.envelope-scene__hint {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--color-accent-gold-soft);
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity var(--speed-medium) ease;
+}
+
+.envelope-scene__hint.is-visible {
+  animation: hint-breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes hint-breathe {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.9; }
+}
+
+/* ================================================================
+   CINEMATIC TRANSITION OVERLAY
+================================================================ */
+.transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: var(--color-ivory-overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--speed-slow) var(--ease-smooth);
+}
+
+.transition-overlay.is-visible {
+  opacity: 1;
+}
+
+/* ================================================================
+   FLOATING MUSIC TOGGLE
+================================================================ */
+.music-toggle {
+  position: fixed;
+  right: var(--space-md);
+  bottom: var(--space-md);
+  z-index: 80;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-soft);
+  color: var(--color-primary);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--speed-medium) var(--ease-out-soft), transform var(--speed-medium) var(--ease-out-soft),
+    background var(--speed-fast) ease;
+}
+
+.music-toggle.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.music-toggle:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.music-toggle[hidden] {
+  display: none;
+}
+
+.music-toggle__icon {
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  transition: opacity var(--speed-fast) ease, transform var(--speed-fast) ease;
+}
+
+.music-toggle__icon--muted {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.music-toggle.is-muted .music-toggle__icon--playing {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.music-toggle.is-muted .music-toggle__icon--muted {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ================================================================
+   MAIN CONTENT WRAPPER
+================================================================ */
+.main-content {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.main-content.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1.2s var(--ease-smooth);
+}
+
+/* ================================================================
+   WEDDING CARD
+================================================================ */
+.wedding-card {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-md);
+}
+
+.wedding-card__paper {
+  width: 100%;
+  max-width: var(--content-max-width);
+  text-align: center;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-medium);
+  padding: var(--space-2xl) var(--space-lg);
+  position: relative;
+}
+
+.wedding-card__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.wedding-card__names {
+  font-size: clamp(2rem, 9vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.wedding-card__ampersand {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.55em;
+  color: var(--color-accent-gold);
+}
+
+.wedding-card__divider {
+  width: 64px;
+  height: 1px;
+  background: var(--color-accent-gold);
+  margin: var(--space-lg) auto;
+  position: relative;
+}
+
+.wedding-card__divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-gold);
+}
+
+.wedding-card__invite-line {
+  font-style: italic;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
+  font-size: 1.05rem;
+}
+
+.wedding-card__date,
+.wedding-card__time,
+.wedding-card__venue {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.wedding-card__time {
+  margin-top: var(--space-3xs);
+  color: var(--color-primary-light);
+}
+
+.wedding-card__venue {
+  margin-top: var(--space-sm);
+  font-weight: 600;
+}
+
+.wedding-card__scroll-cue {
+  display: block;
+  width: 26px;
+  height: 42px;
+  border: 1.5px solid var(--color-accent-gold);
+  border-radius: var(--radius-full);
+  margin: var(--space-xl) auto 0;
+  position: relative;
+}
+
+.wedding-card__scroll-cue span {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-gold);
+  animation: scroll-cue-move 1.8s ease-in-out infinite;
+}
+
+@keyframes scroll-cue-move {
+  0% { opacity: 1; top: 6px; }
+  70% { opacity: 0; top: 20px; }
+  100% { opacity: 0; top: 6px; }
+}
+
+/* ================================================================
+   STORY SECTIONS
+================================================================ */
+.story {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+  padding: var(--space-2xl) var(--space-md);
+}
+
+.story__section {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.story__heading {
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  margin-bottom: var(--space-md);
+}
+
+.story__image-wrap {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  margin-bottom: var(--space-md);
+  background: var(--color-blush);
+  aspect-ratio: 4 / 3;
+}
+
+.story__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.story__text {
+  font-size: 1.1rem;
+  color: var(--color-primary-light);
+  font-style: italic;
+  max-width: 46ch;
+  margin: 0 auto;
+}
+
+/* ================================================================
+   COUNTDOWN
+================================================================ */
+.countdown {
+  padding: var(--space-2xl) var(--space-md);
+  text-align: center;
+  background: var(--color-blush);
+}
+
+.countdown__heading {
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  margin-bottom: var(--space-sm);
+}
+
+.countdown__date-line {
+  color: var(--color-primary-light);
+  font-style: italic;
+  margin-bottom: var(--space-xl);
+}
+
+.countdown__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.countdown__unit {
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-xs);
+  box-shadow: var(--shadow-soft);
+}
+
+.countdown__value {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown__label {
+  display: block;
+  margin-top: var(--space-3xs);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+}
+
+.countdown__complete-message {
+  margin-top: var(--space-xl);
+  font-family: var(--font-heading);
+  font-size: clamp(1.2rem, 5vw, 1.6rem);
+  color: var(--color-primary);
+}
+
+/* ================================================================
+   LOCATION
+================================================================ */
+.location {
+  padding: var(--space-2xl) var(--space-md);
+  text-align: center;
+}
+
+.location__heading {
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  margin-bottom: var(--space-xl);
+}
+
+.location__card {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-medium);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.location__venue-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.location__address {
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-lg);
+}
+
+.location__qr {
+  width: 140px;
+  margin: 0 auto var(--space-lg);
+}
+
+.location__qr img {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-paper-dark);
+  background: var(--color-paper);
+}
+
+.location__qr-caption {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+}
+
+.location__maps-button {
+  display: inline-block;
+  padding: 0.85em 2em;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--speed-fast) var(--ease-smooth), background var(--speed-fast) ease;
+}
+
+.location__maps-button:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+}
+
+/* ================================================================
+   FOOTER
+================================================================ */
+.site-footer {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md) var(--space-2xl);
+}
+
+.site-footer__text {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--color-primary-light);
+}
+
+/* ================================================================
+   SCROLL REVEAL (driven by Intersection Observer in script.js)
+================================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity var(--speed-slow) var(--ease-out-soft), transform var(--speed-slow) var(--ease-out-soft);
+}
+
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.story__section.reveal {
+  transition-delay: 0.05s;
+}
+
+/* ================================================================
+   RESPONSIVE ENHANCEMENTS — DESKTOP ONLY ENHANCES THE MOBILE BASE
+================================================================ */
+@media (min-width: 640px) {
+  body {
+    font-size: 19px;
+  }
+
+  .wedding-card__paper {
+    padding: var(--space-2xl) var(--space-xl);
+  }
+
+  .story {
+    gap: var(--space-2xl);
+  }
+
+  .story__section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-xl);
+    text-align: left;
+    max-width: 900px;
+  }
+
+  .story__section:nth-child(even) .story__image-wrap {
+    order: 2;
+  }
+
+  .story__heading {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: var(--space-lg);
+  }
+
+  .story__text {
+    max-width: 40ch;
+    margin: 0;
+  }
+
+  .countdown__grid {
+    max-width: 520px;
+    gap: var(--space-md);
+  }
+
+  .location__card {
+    padding: var(--space-2xl) var(--space-2xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .envelope {
+    width: min(30vw, 380px);
+  }
+
+  .wedding-card__paper {
+    padding: var(--space-2xl) 5rem;
+  }
+}
